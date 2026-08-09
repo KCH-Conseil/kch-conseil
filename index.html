@@ -484,7 +484,41 @@
       .diagnostic-modal { padding: 24px 18px; }
     }
 
-  </style>
+  
+    /* --- KCH Funnel V2 : questionnaire adaptatif + scoring --- */
+    .diag-v2-question { margin-bottom: 18px; }
+    .diag-v2-counter { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .diag-v2-options { display: grid; gap: 10px; }
+    .diag-v2-option {
+      width: 100%; border: 1px solid rgba(31,90,137,.14); background: #fff;
+      border-radius: 14px; padding: 15px 16px; text-align: left; cursor: pointer;
+      font: inherit; color: var(--texte); transition: .18s ease;
+    }
+    .diag-v2-option:hover { border-color: var(--or); transform: translateY(-1px); }
+    .diag-v2-option.selected { border-color: var(--or); background: #fffaf0; }
+    .diag-v2-nav { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+    .diag-v2-score {
+      width: 120px; height: 120px; border-radius: 50%; display:flex;
+      align-items:center; justify-content:center; flex-direction:column;
+      background: var(--bleu-fonce); color:#fff; margin: 10px auto 20px;
+    }
+    .diag-v2-score strong { font-size: 34px; line-height: 1; }
+    .diag-v2-score span { font-size: 13px; opacity: .8; }
+    .diag-v2-priorities { margin: 16px 0; padding-left: 20px; }
+    .diag-v2-priorities li { margin: 8px 0; }
+    .diag-v2-lead {
+      margin-top: 22px; padding: 20px; border-radius: 16px; background: var(--gris);
+    }
+    .diag-v2-lead-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .diag-v2-lead input {
+      width:100%; border:1px solid rgba(31,90,137,.18); border-radius:12px;
+      padding:13px 14px; font:inherit; background:#fff;
+    }
+    .diag-v2-consent { display:flex; gap:8px; align-items:flex-start; margin:12px 0; font-size:13px; color:var(--muted); }
+    .diag-v2-note { color:var(--muted); font-size:13px; margin-top:10px; }
+    @media(max-width:700px){ .diag-v2-lead-grid{grid-template-columns:1fr;} }
+
+</style>
 </head>
 
 <body>
@@ -830,21 +864,11 @@
       <p class="diagnostic-privacy">Le choix est conservé uniquement dans votre navigateur pour préparer la prochaine étape du diagnostic.</p>
     </div>
 
+    
     <div id="diagnosticResultView" class="diagnostic-result">
-      <div class="diagnostic-step-label">Votre parcours est identifié</div>
-      <div class="diagnostic-progress" aria-hidden="true"><span style="width:10%;"></span></div>
-      <h2 class="diagnostic-question" id="diagnosticResultTitle">Votre besoin</h2>
-      <div class="diagnostic-result-card">
-        <h3 id="diagnosticResultHeading"></h3>
-        <p id="diagnosticResultText"></p>
-      </div>
-      <p class="diagnostic-help">La prochaine étape ajoutera les questions adaptées à ce parcours afin de calculer votre score financier et vos priorités. Pour cette première version, vous pouvez déjà réserver directement un échange si votre besoin est urgent.</p>
-      <div class="diagnostic-result-actions">
-        <button type="button" class="btn btn-primary" onclick="prepareNextDiagnosticStep()">Continuer le diagnostic</button>
-        <a href="https://calendly.com/contact-kch-conseil/30min" target="_blank" class="btn btn-gold" onclick="trackDiagnosticBooking();">Réserver un échange</a>
-        <button type="button" class="btn-secondary-dark" onclick="resetDiagnostic()">Modifier mon choix</button>
-      </div>
-      <p id="diagnosticNextMessage" class="diagnostic-privacy" style="display:none;">Le parcours adaptatif complet sera branché à l’étape suivante. Votre choix actuel est bien enregistré.</p>
+      <div class="diagnostic-step-label" id="diagStageLabel">Diagnostic personnalisé</div>
+      <div class="diagnostic-progress" aria-hidden="true"><span id="diagProgressBar" style="width:10%;"></span></div>
+      <div id="diagDynamic"></div>
     </div>
   </div>
 </div>
@@ -858,119 +882,199 @@
 
 
 <script>
-  const diagnosticPaths = {
-    tresorerie: {
-      title: "Trésorerie / BFR",
-      heading: "Priorité : visibilité cash et besoin en fonds de roulement",
-      text: "La suite du diagnostic évaluera votre visibilité de trésorerie, vos encaissements, vos décaissements, votre BFR et votre niveau d’urgence."
-    },
-    pilotage: {
-      title: "Pilotage financier / reporting",
-      heading: "Priorité : transformer vos chiffres en décisions",
-      text: "La suite évaluera la qualité de votre reporting, vos budgets, vos indicateurs, la lecture de vos marges et votre capacité à anticiper."
-    },
-    daf: {
-      title: "Besoin d’un DAF / RAF",
-      heading: "Priorité : structurer la fonction finance",
-      text: "La suite cherchera à déterminer si votre besoin relève d’un DAF externalisé, d’un RAF, d’un contrôle de gestion renforcé ou d’une mission ponctuelle."
-    },
-    financement: {
-      title: "Financement / prévisionnel",
-      heading: "Priorité : rendre votre projet finançable et lisible",
-      text: "La suite évaluera vos prévisions, vos besoins de financement, votre dossier bancaire, vos hypothèses et la solidité de votre plan financier."
-    },
-    difficultes: {
-      title: "Difficultés financières",
-      heading: "Priorité : sécuriser le court terme",
-      text: "La suite évaluera l’urgence de trésorerie, les échéances sensibles, la visibilité cash et les actions à prioriser pour reprendre le contrôle."
-    },
-    incertain: {
-      title: "Diagnostic général",
-      heading: "Priorité : identifier votre principal point de vigilance",
-      text: "La suite balayera les principaux sujets : trésorerie, rentabilité, pilotage, financement et organisation de la fonction finance."
-    }
-  };
-
-  let diagnosticSource = "unknown";
-  let selectedDiagnosticPath = null;
-
-  function safeGtag(eventName, params = {}) {
-    try {
-      if (typeof gtag === "function") gtag("event", eventName, params);
-    } catch (e) {
-      console.warn("Tracking indisponible", e);
-    }
+const diagnosticPaths = {
+  tresorerie: {
+    label:"Trésorerie / BFR",
+    questions:[
+      ["Quelle visibilité avez-vous sur votre trésorerie ?", [["Plus de 6 mois",0],["3 à 6 mois",8],["1 à 3 mois",16],["Moins d'un mois",25]]],
+      ["Disposez-vous d'un prévisionnel de trésorerie actualisé ?", [["Oui, mis à jour chaque semaine",0],["Oui, mais irrégulièrement",8],["Partiellement",15],["Non",22]]],
+      ["Vos clients paient-ils dans les délais prévus ?", [["Oui, globalement",0],["Quelques retards",7],["Retards fréquents",15],["Retards critiques",22]]],
+      ["Votre BFR est-il suivi et piloté ?", [["Oui, précisément",0],["De façon ponctuelle",7],["Très peu",14],["Non",20]]],
+      ["Avez-vous des échéances sensibles dans les 90 jours ?", [["Non",0],["Oui, mais couvertes",6],["Oui, avec tension",15],["Oui, sans solution claire",22]]],
+      ["Quel est votre niveau d'urgence ?", [["Pas urgent",0],["Dans les 3 mois",8],["Dans le mois",16],["Immédiat",25]]]
+    ],
+    priorities:["Mettre en place une visibilité cash glissante à 13 semaines","Piloter le BFR et les délais d'encaissement","Prioriser les échéances et scénarios de trésorerie"]
+  },
+  pilotage: {
+    label:"Pilotage financier / reporting",
+    questions:[
+      ["À quelle fréquence disposez-vous d'un reporting fiable ?", [["Chaque mois",0],["Tous les trimestres",7],["Irrégulièrement",15],["Jamais",22]]],
+      ["Avez-vous un budget ou forecast actualisé ?", [["Oui",0],["Oui, mais peu utilisé",7],["Partiel",14],["Non",20]]],
+      ["Suivez-vous précisément vos marges par activité/client ?", [["Oui",0],["Partiellement",8],["Difficilement",15],["Non",20]]],
+      ["Vos indicateurs permettent-ils d'anticiper les décisions ?", [["Oui",0],["Parfois",7],["Rarement",14],["Non",20]]],
+      ["Combien de temps faut-il pour obtenir vos chiffres mensuels ?", [["< 10 jours",0],["10 à 20 jours",6],["Plus de 20 jours",12],["Je n'ai pas de clôture mensuelle",20]]],
+      ["Quel est votre niveau d'urgence ?", [["Pas urgent",0],["Dans les 3 mois",8],["Dans le mois",16],["Immédiat",25]]]
+    ],
+    priorities:["Fiabiliser un reporting mensuel court et actionnable","Mettre en place budget et forecast","Suivre marges, rentabilité et KPI de décision"]
+  },
+  daf: {
+    label:"DAF / RAF externalisé",
+    questions:[
+      ["Qui pilote aujourd'hui la fonction finance ?", [["DAF/RAF structuré",0],["Expert-comptable + dirigeant",8],["Dirigeant principalement",15],["Personne clairement",22]]],
+      ["Disposez-vous d'un reporting de gestion mensuel ?", [["Oui",0],["Partiel",8],["Irrégulier",15],["Non",20]]],
+      ["Avez-vous besoin de structurer budgets, cash et KPI ?", [["Peu",0],["Sur certains sujets",8],["Oui",16],["Urgemment",22]]],
+      ["Un recrutement DAF à temps plein est-il adapté ?", [["Oui",0],["Peut-être",6],["Non, trop lourd/coûteux",14],["Non, besoin flexible",18]]],
+      ["Avez-vous des sujets banque, investisseurs ou partenaires à piloter ?", [["Non",0],["Ponctuellement",6],["Régulièrement",14],["Oui, actuellement",20]]],
+      ["Quand souhaitez-vous renforcer la fonction finance ?", [["> 6 mois",0],["3 à 6 mois",7],["< 3 mois",15],["Immédiatement",25]]]
+    ],
+    priorities:["Clarifier le périmètre de direction financière nécessaire","Installer un pilotage cash/reporting/budget cohérent","Dimensionner une intervention DAF/RAF flexible"]
+  },
+  financement: {
+    label:"Financement / prévisionnel",
+    questions:[
+      ["Votre besoin de financement est-il chiffré ?", [["Oui précisément",0],["Approximativement",7],["Très peu",15],["Non",20]]],
+      ["Disposez-vous d'un prévisionnel financier cohérent ?", [["Oui",0],["À actualiser",8],["Incomplet",15],["Non",22]]],
+      ["Votre dossier explique-t-il clairement l'usage des fonds ?", [["Oui",0],["Partiellement",7],["Peu",14],["Non",20]]],
+      ["Avez-vous testé plusieurs scénarios ?", [["Oui",0],["Quelques-uns",6],["Très peu",13],["Non",18]]],
+      ["Avez-vous déjà engagé des discussions avec financeurs/banques ?", [["Oui, avancées",0],["Oui, débutantes",5],["Pas encore",10],["Refus / blocage actuel",18]]],
+      ["Quand les fonds sont-ils nécessaires ?", [["> 6 mois",0],["3 à 6 mois",7],["1 à 3 mois",15],["< 1 mois",25]]]
+    ],
+    priorities:["Chiffrer précisément le besoin et l'usage des fonds","Fiabiliser prévisionnel et scénarios","Préparer un dossier lisible pour banques/financeurs"]
+  },
+  difficultes: {
+    label:"Difficultés financières",
+    questions:[
+      ["Quelle est votre visibilité de trésorerie ?", [["Plus de 3 mois",0],["1 à 3 mois",10],["Quelques semaines",20],["Quelques jours",28]]],
+      ["Avez-vous des échéances impayées ou menacées ?", [["Non",0],["Quelques tensions",10],["Oui, significatives",20],["Oui, critiques",28]]],
+      ["Disposez-vous d'un plan de trésorerie court terme ?", [["Oui, fiable",0],["À actualiser",8],["Partiel",16],["Non",22]]],
+      ["Des discussions sont-elles engagées avec créanciers/banques ?", [["Oui, structurées",0],["En cours",7],["Très peu",14],["Non malgré l'urgence",22]]],
+      ["Une procédure amiable ou collective est-elle en cours/envisagée ?", [["Non",0],["En réflexion",8],["Oui, envisagée",15],["Oui, en cours",20]]],
+      ["Quel est votre niveau d'urgence ?", [["> 3 mois",0],["1 à 3 mois",10],["< 1 mois",20],["Immédiat",30]]]
+    ],
+    priorities:["Établir un plan de trésorerie court terme fiable","Hiérarchiser les échéances et scénarios de continuité","Préparer les échanges avec créanciers et conseils"]
+  },
+  incertain: {
+    label:"Diagnostic financier général",
+    questions:[
+      ["Avez-vous une visibilité fiable sur votre trésorerie ?", [["Oui",0],["Moyenne",8],["Faible",16],["Non",22]]],
+      ["Disposez-vous d'un reporting mensuel ?", [["Oui",0],["Partiel",7],["Irrégulier",14],["Non",20]]],
+      ["Suivez-vous vos marges et votre rentabilité ?", [["Oui",0],["Partiellement",7],["Difficilement",14],["Non",20]]],
+      ["Avez-vous un budget ou prévisionnel à jour ?", [["Oui",0],["À actualiser",7],["Partiel",14],["Non",20]]],
+      ["La fonction finance est-elle suffisamment structurée ?", [["Oui",0],["À améliorer",7],["Insuffisante",14],["Non structurée",20]]],
+      ["Quel est votre niveau d'urgence ?", [["Pas urgent",0],["Dans les 3 mois",8],["Dans le mois",16],["Immédiat",25]]]
+    ],
+    priorities:["Identifier le principal angle mort financier","Fiabiliser trésorerie, reporting et prévisions","Définir les priorités de structuration financière"]
   }
+};
 
-  function openDiagnostic(source) {
-    diagnosticSource = source || "unknown";
-    const overlay = document.getElementById("diagnosticOverlay");
-    overlay.classList.add("is-open");
-    overlay.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    safeGtag("diagnostic_start", {
-      diagnostic_source: diagnosticSource,
-      page_location: window.location.href
-    });
-  }
+let diagnosticSource="unknown", selectedDiagnosticPath=null, diagIndex=0, diagAnswers=[];
 
-  function closeDiagnostic() {
-    const overlay = document.getElementById("diagnosticOverlay");
-    overlay.classList.remove("is-open");
-    overlay.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  function selectDiagnosticPath(path) {
-    const config = diagnosticPaths[path];
-    if (!config) return;
-    selectedDiagnosticPath = path;
-    sessionStorage.setItem("kch_diagnostic_path", path);
-    sessionStorage.setItem("kch_diagnostic_source", diagnosticSource);
-
-    document.getElementById("diagnosticQuestionView").style.display = "none";
-    document.getElementById("diagnosticResultView").classList.add("is-visible");
-    document.getElementById("diagnosticResultTitle").textContent = config.title;
-    document.getElementById("diagnosticResultHeading").textContent = config.heading;
-    document.getElementById("diagnosticResultText").textContent = config.text;
-
-    safeGtag("diagnostic_path_selected", {
-      diagnostic_path: path,
-      diagnostic_source: diagnosticSource
-    });
-  }
-
-  function resetDiagnostic() {
-    selectedDiagnosticPath = null;
-    document.getElementById("diagnosticQuestionView").style.display = "block";
-    document.getElementById("diagnosticResultView").classList.remove("is-visible");
-    document.getElementById("diagnosticNextMessage").style.display = "none";
-  }
-
-  function prepareNextDiagnosticStep() {
-    document.getElementById("diagnosticNextMessage").style.display = "block";
-    safeGtag("diagnostic_continue_click", {
-      diagnostic_path: selectedDiagnosticPath || "unknown"
-    });
-  }
-
-  function trackDiagnosticBooking() {
-    safeGtag("diagnostic_booking_click", {
-      diagnostic_path: selectedDiagnosticPath || "unknown",
-      diagnostic_source: diagnosticSource
-    });
-    safeGtag("conversion", {
-      send_to: "AW-18132210095/tRF2CJ-V5K0cEK-jjsZD"
-    });
-  }
-
-  document.getElementById("diagnosticOverlay").addEventListener("click", function(event) {
-    if (event.target === this) closeDiagnostic();
-  });
-
-  document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape") closeDiagnostic();
-  });
+function safeGtag(name, params={}) {
+  try { if(typeof gtag==="function") gtag("event",name,params); } catch(e){}
+}
+function openDiagnostic(source){
+  diagnosticSource=source||"unknown";
+  const o=document.getElementById("diagnosticOverlay");
+  o.classList.add("is-open"); o.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+  safeGtag("diagnostic_start",{diagnostic_source:diagnosticSource,page_location:location.href});
+}
+function closeDiagnostic(){
+  const o=document.getElementById("diagnosticOverlay");
+  o.classList.remove("is-open"); o.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+function selectDiagnosticPath(path){
+  if(!diagnosticPaths[path]) return;
+  selectedDiagnosticPath=path; diagIndex=0; diagAnswers=[];
+  sessionStorage.setItem("kch_diagnostic_path",path);
+  sessionStorage.setItem("kch_diagnostic_source",diagnosticSource);
+  document.getElementById("diagnosticQuestionView").style.display="none";
+  document.getElementById("diagnosticResultView").classList.add("is-visible");
+  safeGtag("diagnostic_path_selected",{diagnostic_path:path,diagnostic_source:diagnosticSource});
+  renderDiagQuestion();
+}
+function renderDiagQuestion(){
+  const cfg=diagnosticPaths[selectedDiagnosticPath], q=cfg.questions[diagIndex];
+  const progress=Math.round(((diagIndex+1)/(cfg.questions.length+1))*100);
+  document.getElementById("diagProgressBar").style.width=progress+"%";
+  document.getElementById("diagStageLabel").textContent=cfg.label+" — question "+(diagIndex+1)+"/"+cfg.questions.length;
+  document.getElementById("diagDynamic").innerHTML=`
+    <div class="diag-v2-counter">Question ${diagIndex+1} sur ${cfg.questions.length}</div>
+    <h2 class="diagnostic-question">${q[0]}</h2>
+    <p class="diagnostic-help">Choisissez la réponse la plus proche de votre situation actuelle.</p>
+    <div class="diag-v2-options">
+      ${q[1].map((a,i)=>`<button type="button" class="diag-v2-option" onclick="answerDiag(${i})">${a[0]}</button>`).join("")}
+    </div>
+    <div class="diag-v2-nav">
+      ${diagIndex>0?'<button type="button" class="btn-secondary-dark" onclick="prevDiag()">← Précédent</button>':''}
+      <button type="button" class="btn-secondary-dark" onclick="restartDiag()">Changer de parcours</button>
+    </div>`;
+}
+function answerDiag(i){
+  const q=diagnosticPaths[selectedDiagnosticPath].questions[diagIndex];
+  diagAnswers[diagIndex]={label:q[1][i][0],points:q[1][i][1]};
+  safeGtag("diagnostic_answer",{diagnostic_path:selectedDiagnosticPath,question_index:diagIndex+1});
+  if(diagIndex<diagnosticPaths[selectedDiagnosticPath].questions.length-1){diagIndex++;renderDiagQuestion();}
+  else renderDiagResult();
+}
+function prevDiag(){ if(diagIndex>0){diagIndex--;renderDiagQuestion();} }
+function restartDiag(){
+  selectedDiagnosticPath=null; diagIndex=0; diagAnswers=[];
+  document.getElementById("diagnosticQuestionView").style.display="block";
+  document.getElementById("diagnosticResultView").classList.remove("is-visible");
+}
+function getDiagScore(){
+  const total=diagAnswers.reduce((s,a)=>s+(a?.points||0),0);
+  const max=diagnosticPaths[selectedDiagnosticPath].questions.reduce((s,q)=>s+Math.max(...q[1].map(a=>a[1])),0);
+  return Math.min(100,Math.round((total/max)*100));
+}
+function renderDiagResult(){
+  const score=getDiagScore(), cfg=diagnosticPaths[selectedDiagnosticPath];
+  let level,title,summary;
+  if(score>=75){level="Priorité élevée";title="Votre situation mérite une action rapide";summary="Plusieurs réponses indiquent un besoin de sécurisation ou de structuration à court terme.";}
+  else if(score>=50){level="Besoin de structuration";title="Des leviers financiers sont clairement à travailler";summary="Votre organisation présente plusieurs points perfectibles qui peuvent limiter la visibilité et la prise de décision.";}
+  else if(score>=25){level="À optimiser";title="Votre situation semble globalement maîtrisée, avec des axes d'amélioration";summary="Quelques sujets peuvent être renforcés avant qu'ils ne deviennent bloquants.";}
+  else {level="Situation plutôt maîtrisée";title="Les fondamentaux semblent en place";summary="Le diagnostic ne fait pas ressortir d'urgence majeure, sous réserve d'une analyse plus détaillée.";}
+  sessionStorage.setItem("kch_diagnostic_score",String(score));
+  document.getElementById("diagProgressBar").style.width="100%";
+  document.getElementById("diagStageLabel").textContent="Résultat du diagnostic";
+  document.getElementById("diagDynamic").innerHTML=`
+    <div class="diag-v2-score"><strong>${score}</strong><span>/100</span></div>
+    <h2 class="diagnostic-question">${title}</h2>
+    <p class="diagnostic-help"><strong>${level}</strong> — ${summary}</p>
+    <div class="diagnostic-result-card">
+      <h3>Vos 3 priorités</h3>
+      <ul class="diag-v2-priorities">${cfg.priorities.map(p=>`<li>${p}</li>`).join("")}</ul>
+    </div>
+    <div class="diag-v2-lead">
+      <h3>Recevoir la synthèse de mon diagnostic</h3>
+      <p class="diagnostic-help">Laissez vos coordonnées si vous souhaitez être recontacté au sujet de ce diagnostic.</p>
+      <div class="diag-v2-lead-grid">
+        <input id="diagName" type="text" autocomplete="name" placeholder="Prénom et nom">
+        <input id="diagEmail" type="email" autocomplete="email" placeholder="Email professionnel">
+      </div>
+      <label class="diag-v2-consent">
+        <input id="diagConsent" type="checkbox">
+        <span>J'accepte que KCH Conseil utilise ces informations pour répondre à ma demande de diagnostic.</span>
+      </label>
+      <button type="button" class="btn btn-primary" onclick="saveDiagLead()">Valider ma demande</button>
+      <p id="diagLeadMessage" class="diag-v2-note"></p>
+    </div>
+    ${score>=50?`<div class="diagnostic-result-actions">
+      <a href="https://calendly.com/contact-kch-conseil/30min" target="_blank" class="btn btn-gold" onclick="trackDiagnosticBooking()">Réserver un échange de 30 min</a>
+    </div>`:""}
+    <div class="diag-v2-nav"><button type="button" class="btn-secondary-dark" onclick="restartDiag()">Recommencer</button></div>`;
+  safeGtag("diagnostic_complete",{diagnostic_path:selectedDiagnosticPath,diagnostic_score:score});
+}
+function saveDiagLead(){
+  const name=document.getElementById("diagName").value.trim();
+  const email=document.getElementById("diagEmail").value.trim();
+  const consent=document.getElementById("diagConsent").checked;
+  const msg=document.getElementById("diagLeadMessage");
+  if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.textContent="Merci de renseigner un nom et un email valide.";return;}
+  if(!consent){msg.textContent="Votre accord est nécessaire pour transmettre une demande de contact.";return;}
+  const lead={name,email,path:selectedDiagnosticPath,score:getDiagScore(),source:diagnosticSource,createdAt:new Date().toISOString()};
+  localStorage.setItem("kch_last_diagnostic_lead",JSON.stringify(lead));
+  msg.textContent="Demande enregistrée dans ce prototype. La prochaine étape connectera ce formulaire à TITUS pour une transmission réelle.";
+  safeGtag("diagnostic_lead",{diagnostic_path:selectedDiagnosticPath,diagnostic_score:lead.score});
+}
+function trackDiagnosticBooking(){
+  safeGtag("diagnostic_booking_click",{diagnostic_path:selectedDiagnosticPath||"unknown",diagnostic_source:diagnosticSource});
+  safeGtag("conversion",{send_to:"AW-18132210095/tRF2CJ-V5K0cEK-jjsZD"});
+}
+document.getElementById("diagnosticOverlay").addEventListener("click",function(e){if(e.target===this)closeDiagnostic();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDiagnostic();});
 </script>
 
 </body>
