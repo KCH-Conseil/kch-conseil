@@ -392,6 +392,98 @@
         padding: 58px 0;
       }
     }
+  
+    /* --- KCH Funnel V1 : diagnostic financier --- */
+    .diagnostic-launch {
+      background: var(--blanc);
+      border: 1px solid rgba(31,90,137,0.10);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-top: 28px;
+    }
+    .diagnostic-launch h3 { margin-bottom: 8px; }
+    .diagnostic-launch p { color: var(--muted); margin-bottom: 16px; }
+    .diagnostic-meta {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px;
+      font-size: 14px; color: var(--muted);
+    }
+    .diagnostic-meta span {
+      background: var(--gris); border: 1px solid rgba(31,90,137,0.08);
+      padding: 8px 12px; border-radius: 999px;
+    }
+    .diagnostic-overlay {
+      position: fixed; inset: 0; z-index: 1000; display: none;
+      align-items: center; justify-content: center;
+      background: rgba(11,11,11,0.66); padding: 24px;
+    }
+    .diagnostic-overlay.is-open { display: flex; }
+    .diagnostic-modal {
+      width: min(820px, 96vw); max-height: 92vh; overflow-y: auto;
+      background: var(--blanc); border-radius: 26px;
+      box-shadow: 0 30px 90px rgba(0,0,0,.24);
+      padding: 30px; position: relative;
+    }
+    .diagnostic-close {
+      position: absolute; top: 16px; right: 18px; width: 42px; height: 42px;
+      border: 0; border-radius: 999px; background: var(--gris);
+      color: var(--bleu-fonce); cursor: pointer; font-size: 22px; line-height: 1;
+    }
+    .diagnostic-step-label {
+      color: var(--or); font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; font-size: 13px; margin-bottom: 8px;
+    }
+    .diagnostic-progress {
+      height: 8px; background: #edf1f4; border-radius: 999px;
+      overflow: hidden; margin: 18px 0 26px;
+    }
+    .diagnostic-progress span {
+      display: block; height: 100%; width: 10%;
+      background: linear-gradient(90deg,var(--or),var(--or-clair));
+      border-radius: 999px;
+    }
+    .diagnostic-question {
+      font-size: clamp(26px,4vw,38px); line-height: 1.15;
+      color: var(--bleu-fonce); margin-bottom: 10px;
+    }
+    .diagnostic-help { color: var(--muted); margin-bottom: 22px; font-size: 16px; }
+    .diagnostic-options {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 14px;
+    }
+    .diagnostic-option {
+      border: 1px solid rgba(31,90,137,0.14); background: var(--blanc);
+      padding: 18px; border-radius: 16px; text-align: left; cursor: pointer;
+      transition: .2s ease; color: var(--texte); font: inherit; min-height: 96px;
+    }
+    .diagnostic-option:hover, .diagnostic-option:focus {
+      transform: translateY(-2px); border-color: var(--or);
+      box-shadow: 0 14px 34px rgba(16,47,74,.10); outline: none;
+    }
+    .diagnostic-option strong {
+      display: block; color: var(--bleu-fonce); margin-bottom: 4px; font-size: 17px;
+    }
+    .diagnostic-option small { color: var(--muted); font-size: 14px; }
+    .diagnostic-result { display: none; }
+    .diagnostic-result.is-visible { display: block; }
+    .diagnostic-result-card {
+      background: var(--gris); border-left: 5px solid var(--or);
+      border-radius: 16px; padding: 22px; margin: 20px 0;
+    }
+    .diagnostic-result-card h3 { margin-bottom: 8px; }
+    .diagnostic-result-actions {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;
+    }
+    .btn-secondary-dark {
+      display: inline-block; padding: 13px 22px; border-radius: 999px;
+      font-weight: 700; border: 1px solid var(--bleu); color: var(--bleu);
+      background: transparent; cursor: pointer;
+    }
+    .diagnostic-privacy { color: var(--muted); font-size: 13px; margin-top: 18px; }
+    @media (max-width: 700px) {
+      .diagnostic-options { grid-template-columns: 1fr; }
+      .diagnostic-modal { padding: 24px 18px; }
+    }
+
   </style>
 </head>
 
@@ -430,11 +522,11 @@
       </p>
 
       <div class="hero-actions">
-        <a href="#rdv" class="btn btn-gold">Réserver un diagnostic gratuit</a>
+        <button type="button" class="btn btn-gold" onclick="openDiagnostic('hero')">Faire mon diagnostic financier — 2 min</button>
         <a href="#accompagnement" class="btn btn-outline">Comprendre l’accompagnement</a>
       </div>
 
-      <p class="scarcity">⚠️ Échange confidentiel — créneaux limités cette semaine</p>
+      <p class="scarcity">Diagnostic gratuit, sans engagement — première orientation immédiate selon votre situation.</p>
 
       <div class="proof-row">
         <p>✔ Lecture claire de la trésorerie disponible</p>
@@ -458,6 +550,21 @@
     </div>
   </section>
 
+
+  <section id="diagnostic" style="padding:46px 0;">
+    <div class="container">
+      <div class="diagnostic-launch">
+        <div class="kicker" style="color:var(--or);margin-bottom:8px;">Diagnostic Finance PME</div>
+        <h3>Commencez par identifier votre priorité financière</h3>
+        <p>En 2 minutes, choisissez votre situation et laissez le parcours vous orienter vers les bonnes questions : trésorerie, pilotage, DAF/RAF, financement ou difficultés.</p>
+        <button type="button" class="btn btn-primary" onclick="openDiagnostic('section')">Démarrer le diagnostic</button>
+        <div class="diagnostic-meta">
+          <span>≈ 2 minutes</span><span>Sans engagement</span><span>Première orientation immédiate</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="situations" class="section-light">
     <div class="container">
       <h2>Vous êtes concerné si votre entreprise traverse une procédure collective</h2>
@@ -475,7 +582,7 @@
       </div>
 
       <div style="margin-top:30px;">
-        <a href="#rdv" class="btn btn-primary">Faire le point sur ma situation</a>
+        <button type="button" class="btn btn-primary" onclick="openDiagnostic('situations')">Faire le point sur ma situation</button>
       </div>
 
       <p style="margin-top:15px;opacity:0.7;">
@@ -682,11 +789,189 @@
 
 </main>
 
+
+<div id="diagnosticOverlay" class="diagnostic-overlay" aria-hidden="true">
+  <div class="diagnostic-modal" role="dialog" aria-modal="true" aria-labelledby="diagnosticTitle">
+    <button type="button" class="diagnostic-close" aria-label="Fermer" onclick="closeDiagnostic()">×</button>
+
+    <div id="diagnosticQuestionView">
+      <div class="diagnostic-step-label">Étape 1 sur 10</div>
+      <div class="diagnostic-progress" aria-hidden="true"><span></span></div>
+      <h2 id="diagnosticTitle" class="diagnostic-question">Quelle situation décrit le mieux votre besoin actuel ?</h2>
+      <p class="diagnostic-help">Cette première réponse permet d’adapter la suite du diagnostic. Aucune coordonnée n’est demandée à cette étape.</p>
+
+      <div class="diagnostic-options">
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('tresorerie')">
+          <strong>💰 Trésorerie / BFR</strong>
+          <small>Manque de visibilité cash, tensions, retards de paiement, besoin d’anticipation.</small>
+        </button>
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('pilotage')">
+          <strong>📊 Pilotage financier / reporting</strong>
+          <small>Besoin de tableaux de bord, budgets, marge, rentabilité ou indicateurs fiables.</small>
+        </button>
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('daf')">
+          <strong>👔 Besoin d’un DAF / RAF</strong>
+          <small>Structurer ou renforcer la fonction finance sans forcément recruter à temps plein.</small>
+        </button>
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('financement')">
+          <strong>🏦 Financement / prévisionnel</strong>
+          <small>Préparer un dossier bancaire, un business plan ou un besoin de financement.</small>
+        </button>
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('difficultes')">
+          <strong>⚠️ Difficultés financières</strong>
+          <small>Procédure collective, tension avancée, urgence cash ou besoin de restructuration.</small>
+        </button>
+        <button type="button" class="diagnostic-option" onclick="selectDiagnosticPath('incertain')">
+          <strong>❓ Je ne sais pas encore</strong>
+          <small>Vous souhaitez simplement identifier les priorités financières à traiter en premier.</small>
+        </button>
+      </div>
+
+      <p class="diagnostic-privacy">Le choix est conservé uniquement dans votre navigateur pour préparer la prochaine étape du diagnostic.</p>
+    </div>
+
+    <div id="diagnosticResultView" class="diagnostic-result">
+      <div class="diagnostic-step-label">Votre parcours est identifié</div>
+      <div class="diagnostic-progress" aria-hidden="true"><span style="width:10%;"></span></div>
+      <h2 class="diagnostic-question" id="diagnosticResultTitle">Votre besoin</h2>
+      <div class="diagnostic-result-card">
+        <h3 id="diagnosticResultHeading"></h3>
+        <p id="diagnosticResultText"></p>
+      </div>
+      <p class="diagnostic-help">La prochaine étape ajoutera les questions adaptées à ce parcours afin de calculer votre score financier et vos priorités. Pour cette première version, vous pouvez déjà réserver directement un échange si votre besoin est urgent.</p>
+      <div class="diagnostic-result-actions">
+        <button type="button" class="btn btn-primary" onclick="prepareNextDiagnosticStep()">Continuer le diagnostic</button>
+        <a href="https://calendly.com/contact-kch-conseil/30min" target="_blank" class="btn btn-gold" onclick="trackDiagnosticBooking();">Réserver un échange</a>
+        <button type="button" class="btn-secondary-dark" onclick="resetDiagnostic()">Modifier mon choix</button>
+      </div>
+      <p id="diagnosticNextMessage" class="diagnostic-privacy" style="display:none;">Le parcours adaptatif complet sera branché à l’étape suivante. Votre choix actuel est bien enregistré.</p>
+    </div>
+  </div>
+</div>
+
+
 <footer>
   <div class="container">
     © 2026 KCH Conseil — Accompagnement financier des entreprises en procédure collective.
   </div>
 </footer>
+
+
+<script>
+  const diagnosticPaths = {
+    tresorerie: {
+      title: "Trésorerie / BFR",
+      heading: "Priorité : visibilité cash et besoin en fonds de roulement",
+      text: "La suite du diagnostic évaluera votre visibilité de trésorerie, vos encaissements, vos décaissements, votre BFR et votre niveau d’urgence."
+    },
+    pilotage: {
+      title: "Pilotage financier / reporting",
+      heading: "Priorité : transformer vos chiffres en décisions",
+      text: "La suite évaluera la qualité de votre reporting, vos budgets, vos indicateurs, la lecture de vos marges et votre capacité à anticiper."
+    },
+    daf: {
+      title: "Besoin d’un DAF / RAF",
+      heading: "Priorité : structurer la fonction finance",
+      text: "La suite cherchera à déterminer si votre besoin relève d’un DAF externalisé, d’un RAF, d’un contrôle de gestion renforcé ou d’une mission ponctuelle."
+    },
+    financement: {
+      title: "Financement / prévisionnel",
+      heading: "Priorité : rendre votre projet finançable et lisible",
+      text: "La suite évaluera vos prévisions, vos besoins de financement, votre dossier bancaire, vos hypothèses et la solidité de votre plan financier."
+    },
+    difficultes: {
+      title: "Difficultés financières",
+      heading: "Priorité : sécuriser le court terme",
+      text: "La suite évaluera l’urgence de trésorerie, les échéances sensibles, la visibilité cash et les actions à prioriser pour reprendre le contrôle."
+    },
+    incertain: {
+      title: "Diagnostic général",
+      heading: "Priorité : identifier votre principal point de vigilance",
+      text: "La suite balayera les principaux sujets : trésorerie, rentabilité, pilotage, financement et organisation de la fonction finance."
+    }
+  };
+
+  let diagnosticSource = "unknown";
+  let selectedDiagnosticPath = null;
+
+  function safeGtag(eventName, params = {}) {
+    try {
+      if (typeof gtag === "function") gtag("event", eventName, params);
+    } catch (e) {
+      console.warn("Tracking indisponible", e);
+    }
+  }
+
+  function openDiagnostic(source) {
+    diagnosticSource = source || "unknown";
+    const overlay = document.getElementById("diagnosticOverlay");
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    safeGtag("diagnostic_start", {
+      diagnostic_source: diagnosticSource,
+      page_location: window.location.href
+    });
+  }
+
+  function closeDiagnostic() {
+    const overlay = document.getElementById("diagnosticOverlay");
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function selectDiagnosticPath(path) {
+    const config = diagnosticPaths[path];
+    if (!config) return;
+    selectedDiagnosticPath = path;
+    sessionStorage.setItem("kch_diagnostic_path", path);
+    sessionStorage.setItem("kch_diagnostic_source", diagnosticSource);
+
+    document.getElementById("diagnosticQuestionView").style.display = "none";
+    document.getElementById("diagnosticResultView").classList.add("is-visible");
+    document.getElementById("diagnosticResultTitle").textContent = config.title;
+    document.getElementById("diagnosticResultHeading").textContent = config.heading;
+    document.getElementById("diagnosticResultText").textContent = config.text;
+
+    safeGtag("diagnostic_path_selected", {
+      diagnostic_path: path,
+      diagnostic_source: diagnosticSource
+    });
+  }
+
+  function resetDiagnostic() {
+    selectedDiagnosticPath = null;
+    document.getElementById("diagnosticQuestionView").style.display = "block";
+    document.getElementById("diagnosticResultView").classList.remove("is-visible");
+    document.getElementById("diagnosticNextMessage").style.display = "none";
+  }
+
+  function prepareNextDiagnosticStep() {
+    document.getElementById("diagnosticNextMessage").style.display = "block";
+    safeGtag("diagnostic_continue_click", {
+      diagnostic_path: selectedDiagnosticPath || "unknown"
+    });
+  }
+
+  function trackDiagnosticBooking() {
+    safeGtag("diagnostic_booking_click", {
+      diagnostic_path: selectedDiagnosticPath || "unknown",
+      diagnostic_source: diagnosticSource
+    });
+    safeGtag("conversion", {
+      send_to: "AW-18132210095/tRF2CJ-V5K0cEK-jjsZD"
+    });
+  }
+
+  document.getElementById("diagnosticOverlay").addEventListener("click", function(event) {
+    if (event.target === this) closeDiagnostic();
+  });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") closeDiagnostic();
+  });
+</script>
 
 </body>
 </html>
