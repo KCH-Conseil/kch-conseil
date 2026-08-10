@@ -1056,19 +1056,98 @@ function renderDiagResult(){
     </div>`:""}
     <div class="diag-v2-nav"><button type="button" class="btn-secondary-dark" onclick="restartDiag()">Recommencer</button></div>`;
   safeGtag("diagnostic_complete",{diagnostic_path:selectedDiagnosticPath,diagnostic_score:score});
+<script>
+async function saveDiagLead(){
+  const name = document.getElementById("diagName").value.trim();
+  const email = document.getElementById("diagEmail").value.trim();
+  const consent = document.getElementById("diagConsent").checked;
+  const msg = document.getElementById("diagLeadMessage");
+
+  if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    msg.textContent = "Merci de renseigner un nom et un email valide.";
+    return;
+  }
+
+  if(!consent){
+    msg.textContent = "Votre accord est nécessaire pour transmettre une demande de contact.";
+    return;
+  }
+
+  const score = getDiagScore();
+  const cfg = diagnosticPaths[selectedDiagnosticPath];
+
+  let niveau = "faible";
+  if(score >= 75) niveau = "prioritaire";
+  else if(score >= 50) niveau = "structuration";
+  else if(score >= 25) niveau = "a-optimiser";
+  else niveau = "maitrise";
+
+  const payload = {
+    nom: name,
+    email: email,
+    telephone: "",
+    entreprise: "",
+    parcours: selectedDiagnosticPath || "",
+    score_diagnostic: score,
+    niveau: niveau,
+    source: diagnosticSource || "site-kch",
+    page_url: window.location.href,
+    reponses: diagAnswers.map((a, index) => ({
+      question: diagnosticPaths[selectedDiagnosticPath].questions[index][0],
+      reponse: a?.label || "",
+      points: a?.points || 0
+    })),
+    priorites: cfg.priorities,
+    consentement: true,
+    website: ""
+  };
+
+  try {
+    msg.textContent = "Transmission de votre diagnostic...";
+
+    const response = await fetch(
+      "https://titus-kch.onrender.com/api/leads",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if(!response.ok){
+      throw new Error("Erreur API TITUS : " + response.status);
+    }
+
+    const result = await response.json();
+
+    localStorage.setItem(
+      "kch_last_diagnostic_lead",
+      JSON.stringify({
+        ...payload,
+        titusLeadId: result.lead_id,
+        createdAt: new Date().toISOString()
+      })
+    );
+
+    msg.textContent =
+      "Votre demande a bien été transmise à KCH Conseil. Nous vous recontacterons rapidement.";
+
+    safeGtag("diagnostic_lead", {
+      diagnostic_path: selectedDiagnosticPath,
+      diagnostic_score: score,
+      titus_lead_id: result.lead_id
+    });
+
+  } catch(error) {
+    console.error(error);
+
+    msg.textContent =
+      "Votre demande n'a pas pu être transmise pour le moment. Vous pouvez réserver directement un échange ci-dessous.";
+  }
 }
-function saveDiagLead(){
-  const name=document.getElementById("diagName").value.trim();
-  const email=document.getElementById("diagEmail").value.trim();
-  const consent=document.getElementById("diagConsent").checked;
-  const msg=document.getElementById("diagLeadMessage");
-  if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.textContent="Merci de renseigner un nom et un email valide.";return;}
-  if(!consent){msg.textContent="Votre accord est nécessaire pour transmettre une demande de contact.";return;}
-  const lead={name,email,path:selectedDiagnosticPath,score:getDiagScore(),source:diagnosticSource,createdAt:new Date().toISOString()};
-  localStorage.setItem("kch_last_diagnostic_lead",JSON.stringify(lead));
-  msg.textContent="Demande enregistrée dans ce prototype. La prochaine étape connectera ce formulaire à TITUS pour une transmission réelle.";
-  safeGtag("diagnostic_lead",{diagnostic_path:selectedDiagnosticPath,diagnostic_score:lead.score});
-}
+</script>
 function trackDiagnosticBooking(){
   safeGtag("diagnostic_booking_click",{diagnostic_path:selectedDiagnosticPath||"unknown",diagnostic_source:diagnosticSource});
   safeGtag("conversion",{send_to:"AW-18132210095/tRF2CJ-V5K0cEK-jjsZD"});
