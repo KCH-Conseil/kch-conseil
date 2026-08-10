@@ -1056,7 +1056,7 @@ function renderDiagResult(){
     </div>`:""}
     <div class="diag-v2-nav"><button type="button" class="btn-secondary-dark" onclick="restartDiag()">Recommencer</button></div>`;
   safeGtag("diagnostic_complete",{diagnostic_path:selectedDiagnosticPath,diagnostic_score:score});
-<script>
+  
 async function saveDiagLead(){
   const name = document.getElementById("diagName").value.trim();
   const email = document.getElementById("diagEmail").value.trim();
