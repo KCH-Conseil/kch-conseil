@@ -3,11 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KCH Radar SEO</title>
+  <title>KCH Radar SEO V1</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+      color: #102f4a;
+    }
+
+    .container {
+      width: min(1100px, 92%);
+      margin: 40px auto;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #65717f;
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(16, 47, 74, 0.08);
+    }
+
+    .score {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 8px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #e5e9ef;
+      text-align: left;
+    }
+
+    th {
+      background: #102f4a;
+      color: white;
+    }
+
+    .priority {
+      font-weight: 700;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <h1>KCH Radar SEO</h1>
-  <p>Détection et priorisation des opportunités d'acquisition organique de KCH Conseil.</p>
+  <div class="container">
+    <h1>KCH Radar SEO</h1>
+    <p class="subtitle">
+      Radar d'opportunités organiques pour KCH Conseil.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <div>Opportunités détectées</div>
+        <div class="score">6</div>
+      </div>
+
+      <div class="card">
+        <div>Priorités fortes</div>
+        <div class="score">3</div>
+      </div>
+
+      <div class="card">
+        <div>Objectif</div>
+        <div class="score">Top 10</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mot-clé</th>
+          <th>Intention</th>
+          <th>Priorité</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>DAF externalisé PME</td>
+          <td>Commerciale</td>
+          <td class="priority">Très forte</td>
+          <td>Renforcer la page principale</td>
+        </tr>
+
+        <tr>
+          <td>Direction financière externalisée</td>
+          <td>Commerciale</td>
+          <td class="priority">Très forte</td>
+          <td>Créer une page dédiée</td>
+        </tr>
+
+        <tr>
+          <td>Pilotage financier PME</td>
+          <td>Commerciale</td>
+          <td class="priority">Forte</td>
+          <td>Créer une page dédiée</td>
+        </tr>
+
+        <tr>
+          <td>Gestion de trésorerie PME</td>
+          <td>Commerciale</td>
+          <td class="priority">Forte</td>
+          <td>Créer une page dédiée</td>
+        </tr>
+
+        <tr>
+          <td>Prévisionnel de trésorerie</td>
+          <td>Commerciale</td>
+          <td class="priority">Forte</td>
+          <td>Créer une page dédiée</td>
+        </tr>
+
+        <tr>
+          <td>Entreprise en difficulté trésorerie</td>
+          <td>Urgente</td>
+          <td class="priority">Moyenne</td>
+          <td>Créer une page séparée</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
