@@ -974,6 +974,7 @@ function closeDiagnostic(){
   o.classList.remove("is-open"); o.setAttribute("aria-hidden","true");
   document.body.style.overflow="";
 }
+  if (window.location.hash === "#diagnostic") openDiagnostic("landing");
 function selectDiagnosticPath(path){
   if(!diagnosticPaths[path]) return;
   selectedDiagnosticPath=path; diagIndex=0; diagAnswers=[];
